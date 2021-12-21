@@ -2,8 +2,7 @@ import joplin from "api";
 import { SettingItemType } from "api/types";
 import { 
 	actions, DTI_SETTINGS_PREFIX, ACTIVATE_ONLY_SETTING, ENABLE_JOIN_LINES, ENABLE_TOGGLE_OVERWRITE, 
-	CUSTOM_TEXT_WRAP_1_PREFIX, CUSTOM_TEXT_WRAP_1_POSTFIX, 
-	CUSTOM_TEXT_WRAP_2_PREFIX, CUSTOM_TEXT_WRAP_2_POSTFIX 
+	NUM_CUSTOM_WRAP_FIELDS
 } from "./common";
 
 export namespace settings {
@@ -44,47 +43,6 @@ export namespace settings {
 			description: "The markdown editor (CodeMirror) provides a function to toggle overwrite mode. This option enables it. (requires restart)",
 		}
 
-		
-		// CUSTOM WRAP TEXT 1
-		PLUGIN_SETTINGS[CUSTOM_TEXT_WRAP_1_PREFIX] = {
-			value: '<span style="color: red">',
-			public: true,
-			section: SECTION,
-			type: SettingItemType.String,
-			label: 'Custom prefix 1',
-			// description: "Create a custom prefix / postfix combination to be inserted before/after highlighted text.",
-		}
-		
-		PLUGIN_SETTINGS[CUSTOM_TEXT_WRAP_1_POSTFIX] = {
-			value: '</span>',
-			public: true,
-			section: SECTION,
-			type: SettingItemType.String,
-			label: 'Custom postfix 1',
-			// description: "Create a custom prefix / postfix combination to be inserted before/after highlighted text.",
-		}		
-		// END CUSTOM WRAP TEXT 1
-
-		// CUSTOM WRAP TEXT 2
-		PLUGIN_SETTINGS[CUSTOM_TEXT_WRAP_2_PREFIX] = {
-			value: '<span style="color: orange">',
-			public: true,
-			section: SECTION,
-			type: SettingItemType.String,
-			label: 'Custom prefix 2',
-			// description: "Create a custom prefix / postfix combination to be inserted before/after highlighted text.",
-		}
-		
-		PLUGIN_SETTINGS[CUSTOM_TEXT_WRAP_2_POSTFIX] = {
-			value: '</span>',
-			public: true,
-			section: SECTION,
-			type: SettingItemType.String,
-			label: 'Custom postfix 2',
-			// description: "Create a custom prefix / postfix combination to be inserted before/after highlighted text.",
-		}		
-		// END CUSTOM WRAP TEXT 2
-
 		for (const actionName in actions) {
 			const action = actions[actionName];
 			var setting = DTI_SETTINGS_PREFIX + actionName;
@@ -96,6 +54,47 @@ export namespace settings {
 				advanced: true,
 				type: SettingItemType.Bool,
 				label: 'Remove toolbar icon for ' + action.stringPrefix + action.label + action.stringPostfix + ' (requires restart)',
+			}
+		}
+
+		PLUGIN_SETTINGS[NUM_CUSTOM_WRAP_FIELDS] = {
+			value: 2,
+			public: true,
+			section: SECTION,
+			type: SettingItemType.Int,
+			label: 'Number of custom wrap fields (requires restart)',
+			minimum: 0,
+			maximum: 9
+		}
+		await joplin.settings.registerSettings(PLUGIN_SETTINGS);
+
+
+		// register dynamic fields
+		PLUGIN_SETTINGS = {};
+
+		const num_custom_wrap_fields = (await joplin.settings.value(NUM_CUSTOM_WRAP_FIELDS) as number)
+		console.log(num_custom_wrap_fields)
+		for (let i = 1; i <= num_custom_wrap_fields; i++) {
+			let setting = `customfield${i}`
+
+			// register prefix
+			PLUGIN_SETTINGS[setting + '-prefix'] = {
+				value: i == 1 ? '<span style="color: red">' : '',  // default first item
+				public: true,
+				section: SECTION,
+				advanced: false,
+				type: SettingItemType.String,
+				label: `CustomWrap${i} Prefix`
+			}
+
+			// register postfix
+			PLUGIN_SETTINGS[setting + '-postfix'] = {
+				value: i == 1 ? '</span>' : '',  // default first item
+				public: true,
+				section: SECTION,
+				advanced: false,
+				type: SettingItemType.String,
+				label: `CustomWrap${i} Postfix`
 			}
 		}
 
