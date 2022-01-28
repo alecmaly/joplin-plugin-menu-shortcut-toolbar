@@ -11,6 +11,10 @@ import {
 function wrapSelectionWithStrings(selected: string|null, string1: string, string2 = '', defaultText = '') {
 	if (!selected) selected = defaultText;
 
+	// replace \n string with newlines for increased flexibility of output
+	string1 = string1.replace(/\\n/g, '\n')
+	string2 = string2.replace(/\\n/g, '\n')
+
 	// Remove white space on either side of selection
 	const start = selected.search(/[^\s]/);
 	const end = selected.search(/[^\s](?=[\s]*$)/);
@@ -132,6 +136,5 @@ joplin.plugins.register({
 			});
 			joplin.views.menuItems.create('editorToggleOverwriteMenuItem', 'editor.toggleOverwrite', MenuItemLocation.Edit, { accelerator: 'CmdOrCtrl+Shift+O' });
 		}
-
 	},
 });
