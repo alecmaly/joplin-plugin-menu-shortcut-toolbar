@@ -5,7 +5,7 @@ import { ContentScriptType } from 'api/types';
 import { settings } from "./settings";
 import { 
 	actions, DTI_SETTINGS_PREFIX, ACTIVATE_ONLY_SETTING, ENABLE_JOIN_LINES, ENABLE_TOGGLE_OVERWRITE, 
-	NUM_CUSTOM_WRAP_FIELDS
+	NUM_CUSTOM_WRAP_FIELDS, NUM_CUSTOM_REPLACE_FIELDS
 } from "./common";
 
 function wrapSelectionWithStrings(selected: string|null, string1: string, string2 = '', defaultText = '') {
@@ -71,15 +71,15 @@ joplin.plugins.register({
 		}
 
 		// process custom wrap fields
-		const numCustomFields = await joplin.settings.value(NUM_CUSTOM_WRAP_FIELDS);
-		for (let i = 1; i <= numCustomFields; i++) {
+		const numCustomWrapFields = await joplin.settings.value(NUM_CUSTOM_WRAP_FIELDS);
+		for (let i = 1; i <= numCustomWrapFields; i++) {
 
 			let actionName = `textCustomWrap${i}`
 
 			let action = {
 				iconName: 'fas fa-font',
 				defaultText: `custom text wrap ${i}`,
-				accelerator: i == 1 ? 'CmdOrCtrl+Shift+R' : null, // default first shortcut
+				accelerator: i == 1 ? 'CmdOrCtrl+Shift+W' : null, // default first shortcut
 				markdownPluginSetting: `markdown.plugin.customwrap${i}`,
 			}
 
@@ -92,7 +92,54 @@ joplin.plugins.register({
 					const selectedText = (await joplin.commands.execute('selectedText') as string);
 
 					// const newText = wrapSelectionWithStrings(selectedText, await getDynamicWrapText(i, 'prefix'), await getDynamicWrapText(i, 'postfix'), action.defaultText);
-					const newText = wrapSelectionWithStrings(selectedText, (await joplin.settings.value(`customfield${i}-prefix`) as string), (await joplin.settings.value(`customfield${i}-postfix`) as string), action.defaultText);
+					const newText = wrapSelectionWithStrings(selectedText, (await joplin.settings.value(`customfieldwrap${i}-prefix`) as string), (await joplin.settings.value(`customfieldwrap${i}-postfix`) as string), action.defaultText);
+
+					await joplin.commands.execute('replaceSelection', newText);
+					await joplin.commands.execute('editor.focus');
+				},
+			});
+
+			joplin.views.toolbarButtons.create(actionName + 'Button', actionName, ToolbarButtonLocation.EditorToolbar);
+			joplin.views.menuItems.create(actionName + 'MenuItem', actionName, MenuItemLocation.Edit, { accelerator: action.accelerator });
+		}
+
+
+		// process custom replace fields
+		const numCustomReplaceFields = await joplin.settings.value(NUM_CUSTOM_REPLACE_FIELDS);
+		for (let i = 1; i <= numCustomReplaceFields; i++) {
+
+			let actionName = `textCustomReplace${i}`
+
+			let action = {
+				iconName: 'fas fa-font',
+				defaultText: `custom text replace ${i}`,
+				accelerator: i == 1 ? 'CmdOrCtrl+Shift+R' : null, // default first shortcut
+				markdownPluginSetting: `markdown.plugin.customreplace${i}`,
+			}
+
+			joplin.commands.register({
+				name: actionName,
+				label: `CustomReplace${i}`,
+				enabledCondition: 'markdownEditorPaneVisible && !richTextEditorVisible',
+				iconName: action.iconName,
+				execute: async () => {
+					const selectedText = (await joplin.commands.execute('selectedText') as string);
+
+					// const newText = wrapSelectionWithStrings(selectedText, await getDynamicWrapText(i, 'prefix'), await getDynamicWrapText(i, 'postfix'), action.defaultText);
+					// const newText = wrapSelectionWithStrings(selectedText, (await joplin.settings.value(`customfield${i}-prefix`) as string), (await joplin.settings.value(`customfield${i}-postfix`) as string), action.defaultText);
+
+					// regex replace
+					const searchStr = (await joplin.settings.value(`customfieldreplace${i}-searchstr`) as string);
+					const searchStrRegex = new RegExp(searchStr, (await joplin.settings.value(`customfieldreplace${i}-regexFlags`) as string) || 'g');
+					const replaceStr = (await joplin.settings.value(`customfieldreplace${i}-replacestr`) as string)
+					
+					const newText = selectedText.replace(searchStrRegex, (match) => {
+						return replaceStr.replace("<match>", match);
+					});
+
+
+					// const newText = selectedText.replace(new RegExp((await joplin.settings.value(`customfieldreplace${i}-searchstr`) as string), (await joplin.settings.value(`customfieldreplace${i}-regexFlags`) as string) || 'g'), (await joplin.settings.value(`customfieldreplace${i}-replacestr`) as string));
+
 
 					await joplin.commands.execute('replaceSelection', newText);
 					await joplin.commands.execute('editor.focus');

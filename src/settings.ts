@@ -2,7 +2,7 @@ import joplin from "api";
 import { SettingItemType } from "api/types";
 import { 
 	actions, DTI_SETTINGS_PREFIX, ACTIVATE_ONLY_SETTING, ENABLE_JOIN_LINES, ENABLE_TOGGLE_OVERWRITE, 
-	NUM_CUSTOM_WRAP_FIELDS
+	NUM_CUSTOM_WRAP_FIELDS, NUM_CUSTOM_REPLACE_FIELDS
 } from "./common";
 
 export namespace settings {
@@ -66,16 +66,27 @@ export namespace settings {
 			minimum: 0,
 			maximum: 9
 		}
+
+		PLUGIN_SETTINGS[NUM_CUSTOM_REPLACE_FIELDS] = {
+			value: 1,
+			public: true,
+			section: SECTION,
+			type: SettingItemType.Int,
+			label: 'Number of custom replace fields (requires restart)',
+			minimum: 0,
+			maximum: 9
+		}
 		await joplin.settings.registerSettings(PLUGIN_SETTINGS);
 
 
 		// register dynamic fields
 		PLUGIN_SETTINGS = {};
 
+		// register custom wrap settings
 		const num_custom_wrap_fields = (await joplin.settings.value(NUM_CUSTOM_WRAP_FIELDS) as number)
 		console.log(num_custom_wrap_fields)
 		for (let i = 1; i <= num_custom_wrap_fields; i++) {
-			let setting = `customfield${i}`
+			let setting = `customfieldwrap${i}`
 
 			// register prefix
 			PLUGIN_SETTINGS[setting + '-prefix'] = {
@@ -95,6 +106,41 @@ export namespace settings {
 				advanced: false,
 				type: SettingItemType.String,
 				label: `CustomWrap${i} Postfix`
+			}
+		}
+
+		// register custom replace settings
+		const num_custom_replace_fields = (await joplin.settings.value(NUM_CUSTOM_REPLACE_FIELDS) as number)
+		for (let i = 1; i <= num_custom_replace_fields; i++) {
+			let setting = `customfieldreplace${i}`
+
+			// register prefix
+			PLUGIN_SETTINGS[setting + '-searchstr'] = {
+				value: i == 1 ? '^\s*' : '',  // default first item
+				public: true,
+				section: SECTION,
+				advanced: false,
+				type: SettingItemType.String,
+				label: `CustomReplace${i} SearchStr`
+			}
+
+			// register postfix
+			PLUGIN_SETTINGS[setting + '-replacestr'] = {
+				value: i == 1 ? '<match> - ' : '',  // default first item
+				public: true,
+				section: SECTION,
+				advanced: false,
+				type: SettingItemType.String,
+				label: `CustomReplace${i} ReplaceStr`
+			}
+
+			PLUGIN_SETTINGS[setting + '-regexFlags'] = {
+				value: i == 1 ? 'gm' : 'g',  // default first item
+				public: true,
+				section: SECTION,
+				advanced: false,
+				type: SettingItemType.String,
+				label: `CustomReplace${i} regexFlags`
 			}
 		}
 

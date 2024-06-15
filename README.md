@@ -19,7 +19,8 @@ This plugin creates menu items (in `Edit`), shortcuts (defaults can be changed),
 | underline          | `CmdOrCtrl+U`       | textUnderline      |
 | superscript        |                     | textSuperscript    |
 | subscript          |                     | textSubscript      |
-| custom text wrap 1 | `CmdOrCtrl+Shift+R` | textCustomWrap1    |
+| custom text wrap 1 | `CmdOrCtrl+Shift+W` | textCustomWrap1    |
+| custom text replace 1 | `CmdOrCtrl+Shift+R` | textCustomReplace1    |
 
 The shortcuts can be changed in the shortcut editor (`Settings > Keyboard Shortcuts`) or in the `keymap-desktop.json` file.
 

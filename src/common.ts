@@ -50,6 +50,7 @@ export const ACTIVATE_ONLY_SETTING    = 'activateOnlyIfEnabledInMarkdownSettings
 export const ENABLE_JOIN_LINES        = 'enableJoinLines';
 export const ENABLE_TOGGLE_OVERWRITE  = 'enableToggleOverwrite';
 export const NUM_CUSTOM_WRAP_FIELDS = 'numberCustomWrapFields';
+export const NUM_CUSTOM_REPLACE_FIELDS = 'numberCustomReplaceFields';
 
 export default {
 	actions,
@@ -57,5 +58,6 @@ export default {
 	ACTIVATE_ONLY_SETTING,
 	ENABLE_JOIN_LINES,
 	ENABLE_TOGGLE_OVERWRITE,
-	NUM_CUSTOM_WRAP_FIELDS
+	NUM_CUSTOM_WRAP_FIELDS,
+	NUM_CUSTOM_REPLACE_FIELDS
 }
